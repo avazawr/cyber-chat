@@ -9,6 +9,11 @@ type Thread = {
   createdAt: Date;
 };
 
+type AuthorStats = {
+  author: string;
+  threads: number;
+};
+
 const sampleThreads: Thread[] = [
   {
     id: "4f5362f7-ee63-495a-8903-8240d95f6625",
@@ -52,6 +57,27 @@ class ThreadsService {
   getAllThreads(): Thread[] {
     return sampleThreads;
   }
+
+  getAuthorStats(): AuthorStats[] {
+    let authorsList: string[] = sampleThreads.map((thread) => thread.author);
+    authorsList = [...new Set(authorsList)];
+
+    const authors: AuthorStats[] = authorsList.map((author) => ({
+      author,
+      threads: sampleThreads.reduce((acc, thread) => {
+        if (thread.author === author) return acc + 1;
+        else return acc;
+      }, 0),
+    }));
+
+    authors.sort(
+      (a, b) => b.threads - a.threads || a.author.localeCompare(b.author),
+    );
+
+    return authors;
+
+    return authors;
+  }
 }
 
 @Controller()
@@ -61,6 +87,11 @@ class ThreadsController {
   @Get("threads")
   getThreads(): Thread[] {
     return this.threadsService.getAllThreads();
+  }
+
+  @Get("threads/authors")
+  getAuthorStats(): AuthorStats[] {
+    return this.threadsService.getAuthorStats();
   }
 }
 
