@@ -55,11 +55,15 @@ const sampleThreads: Thread[] = [
 @Injectable()
 class ThreadsService {
   getAllThreads(): Thread[] {
-    return sampleThreads;
+    return sampleThreads.toSorted(
+      (a, b) => b.createdAt.getTime() - a.createdAt.getTime(),
+    );
   }
 
   getThreadsByAuthor(author: string) {
-    return sampleThreads.filter((thread) => thread.author === author);
+    return sampleThreads
+      .filter((thread) => thread.author === author)
+      .toSorted((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
   }
 
   getAuthorStats(): AuthorStats[] {
