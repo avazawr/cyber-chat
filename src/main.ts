@@ -1,4 +1,4 @@
-import { Controller, Get, Injectable, Module } from "@nestjs/common";
+import { Controller, Get, Injectable, Module, Query } from "@nestjs/common";
 import { NestFactory } from "@nestjs/core";
 
 type Thread = {
@@ -58,6 +58,10 @@ class ThreadsService {
     return sampleThreads;
   }
 
+  getThreadsByAuthor(author: string) {
+    return sampleThreads.filter((thread) => thread.author === author);
+  }
+
   getAuthorStats(): AuthorStats[] {
     let authorsList: string[] = sampleThreads.map((thread) => thread.author);
     authorsList = [...new Set(authorsList)];
@@ -75,8 +79,6 @@ class ThreadsService {
     );
 
     return authors;
-
-    return authors;
   }
 }
 
@@ -85,8 +87,9 @@ class ThreadsController {
   constructor(private readonly threadsService: ThreadsService) {}
 
   @Get("threads")
-  getThreads(): Thread[] {
-    return this.threadsService.getAllThreads();
+  getThreads(@Query("author") author: string): Thread[] {
+    if (!author) return this.threadsService.getAllThreads();
+    else return this.threadsService.getThreadsByAuthor(author);
   }
 
   @Get("threads/authors")
