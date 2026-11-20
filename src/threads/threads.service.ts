@@ -1,10 +1,20 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { AuthorStats, Thread, ThreadPayload } from './thread.js';
+import {
+  AuthorStats,
+  Thread,
+  ThreadPayload,
+  ThreadWithComments,
+} from './thread.js';
 import { ThreadsRepository } from './threads.repository.js';
+import { CommentsService } from '../comments/comments.service.js';
+import { Comment, CommentPayload } from '../comments/comment.js';
 
 @Injectable()
 export class ThreadsService {
-  constructor(private readonly threadsRepository: ThreadsRepository) {}
+  constructor(
+    private readonly threadsRepository: ThreadsRepository,
+    private readonly commentsService: CommentsService,
+  ) {}
 
   getAllThreads(): Thread[] {
     return this.threadsRepository
@@ -19,13 +29,19 @@ export class ThreadsService {
       .toSorted((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
   }
 
-  findById(id: string): Thread {
+  findById(id: string): ThreadWithComments {
     const thread = this.threadsRepository.findById(id);
 
     if (!thread) {
       throw new NotFoundException('Thread not found');
     }
-    return thread;
+
+    const comments = this.commentsService.findByThread(thread.id);
+
+    return {
+      ...thread,
+      comments,
+    };
   }
 
   create(payload: ThreadPayload): Thread {
@@ -51,5 +67,12 @@ export class ThreadsService {
     );
 
     return authors;
+  }
+
+  addComment(threadId: string, payload: CommentPayload): Comment {
+    if (!this.findById(threadId)) {
+      throw new NotFoundException('Thread not found');
+    }
+    return this.commentsService.create(threadId, payload);
   }
 }

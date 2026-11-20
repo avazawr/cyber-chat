@@ -1,3 +1,5 @@
+import type { Comment } from '../comments/comment.js';
+
 export type Thread = {
   id: string;
   title: string;
@@ -12,3 +14,7 @@ export type AuthorStats = {
 };
 
 export type ThreadPayload = Pick<Thread, 'title' | 'author' | 'body'>;
+
+export type ThreadWithComments = Thread & {
+  comments: Comment[];
+};

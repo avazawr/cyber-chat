@@ -9,6 +9,7 @@ import {
 } from '@nestjs/common';
 import { ThreadsService } from './threads.service.js';
 import type { AuthorStats, Thread, ThreadPayload } from './thread.js';
+import type { Comment, CommentPayload } from '../comments/comment.js';
 
 @Controller('threads')
 export class ThreadsController {
@@ -20,7 +21,7 @@ export class ThreadsController {
     else return this.threadsService.getThreadsByAuthor(author);
   }
 
-  @Get('/authors')
+  @Get('authors')
   getAuthorStats(): AuthorStats[] {
     return this.threadsService.getAuthorStats();
   }
@@ -37,5 +38,16 @@ export class ThreadsController {
     }
 
     return this.threadsService.create(body);
+  }
+
+  @Post(':id/comments')
+  createComment(
+    @Param('id') id: string,
+    @Body() body: CommentPayload,
+  ): Comment {
+    if (!body || !body?.author || !body?.body) {
+      throw new BadRequestException('Missing required fields');
+    }
+    return this.threadsService.addComment(id, body);
   }
 }
