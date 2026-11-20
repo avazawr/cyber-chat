@@ -22,4 +22,18 @@ export class CommentsService {
   create(hreadId: string, payload: CommentPayload): Comment {
     return this.commentsRepository.create(hreadId, payload);
   }
+
+  markDeleted(id: string) {
+    const comment = this.commentsRepository.findById(id);
+
+    if (!comment) {
+      throw new NotFoundException('Comment not found');
+    }
+    comment.body = 'deleted';
+    return this.commentsRepository.edit(comment);
+  }
+
+  deleteByThread(threadId: string) {
+    this.commentsRepository.deleteByThread(threadId);
+  }
 }

@@ -76,4 +76,8 @@ export class ThreadsRepository {
 
     return thread;
   }
+
+  delete(id: string): boolean {
+    return this.threads.delete(id);
+  }
 }

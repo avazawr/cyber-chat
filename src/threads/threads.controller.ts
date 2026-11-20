@@ -2,6 +2,7 @@ import {
   BadRequestException,
   Body,
   Controller,
+  Delete,
   Get,
   Param,
   Post,
@@ -49,5 +50,10 @@ export class ThreadsController {
       throw new BadRequestException('Missing required fields');
     }
     return this.threadsService.addComment(id, body);
+  }
+
+  @Delete(':id')
+  deleteThread(@Param('id') id: string) {
+    this.threadsService.remove(id);
   }
 }

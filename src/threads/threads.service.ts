@@ -75,4 +75,10 @@ export class ThreadsService {
     }
     return this.commentsService.create(threadId, payload);
   }
+
+  remove(threadId: string) {
+    if (this.threadsRepository.delete(threadId)) {
+      this.commentsService.deleteByThread(threadId);
+    } else throw new NotFoundException('Thread not found');
+  }
 }

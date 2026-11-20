@@ -28,4 +28,17 @@ export class CommentsRepository {
 
     return comment;
   }
+
+  edit(comment: Comment) {
+    this.comments.set(comment.id, comment);
+    return comment;
+  }
+
+  deleteByThread(threadId: string) {
+    const comments = this.findByThread(threadId);
+
+    for (const comment of comments) {
+      this.comments.delete(comment.id);
+    }
+  }
 }
