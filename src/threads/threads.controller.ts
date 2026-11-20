@@ -1,6 +1,14 @@
-import { Controller, Get, Query } from '@nestjs/common';
+import {
+  BadRequestException,
+  Body,
+  Controller,
+  Get,
+  Param,
+  Post,
+  Query,
+} from '@nestjs/common';
 import { ThreadsService } from './threads.service.js';
-import { AuthorStats, Thread } from './thread.js';
+import type { AuthorStats, Thread, ThreadPayload } from './thread.js';
 
 @Controller('threads')
 export class ThreadsController {
@@ -15,5 +23,19 @@ export class ThreadsController {
   @Get('/authors')
   getAuthorStats(): AuthorStats[] {
     return this.threadsService.getAuthorStats();
+  }
+
+  @Get(':id')
+  getThreadById(@Param('id') id: string): Thread {
+    return this.threadsService.findById(id);
+  }
+
+  @Post()
+  createThread(@Body() body: ThreadPayload): Thread {
+    if (!body || !body?.title || !body?.author || !body?.body) {
+      throw new BadRequestException('Missing required fields');
+    }
+
+    return this.threadsService.create(body);
   }
 }
