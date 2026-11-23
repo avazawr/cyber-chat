@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { ConfigModule, ConfigService } from '@nestjs/config';
 
 import { AppController } from './app.controller.js';
 import { AppService } from './app.service.js';
@@ -8,12 +9,17 @@ import { CommentsModule } from './comments/comments.module.js';
 
 @Module({
   imports: [
-    TypeOrmModule.forRoot({
-      type: 'better-sqlite3',
-      database: 'data/cyber-chat.sqlite',
-      autoLoadEntities: true,
-      synchronize: true,
-      logging: false,
+    ConfigModule.forRoot(),
+    TypeOrmModule.forRootAsync({
+      imports: [ConfigModule],
+      inject: [ConfigService],
+      useFactory: (config: ConfigService) => ({
+        type: 'better-sqlite3',
+        database: config.getOrThrow<string>('DATABASE_PATH'),
+        autoLoadEntities: true,
+        synchronize: true,
+        logging: false,
+      }),
     }),
     ThreadsModule,
     CommentsModule,
