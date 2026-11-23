@@ -17,7 +17,7 @@ import { CommentsModule } from './comments/comments.module.js';
         type: 'better-sqlite3',
         database: config.getOrThrow<string>('DATABASE_PATH'),
         autoLoadEntities: true,
-        synchronize: true,
+        synchronize: false,
         logging: false,
       }),
     }),

@@ -15,16 +15,16 @@ import { CommentsService } from '../comments/comments.service.js';
 import { Comment, CommentPayload } from '../comments/comment.entity.js';
 
 const sampleThreads: ThreadPayload[] = [
-  {
-    title: 'Tabs or spaces, final answer?',
-    author: 'pixelpirate',
-    body: 'My team argues about this in every code review. What does your formatter do?',
-  },
-  {
-    title: 'Is SQLite enough for a side project?',
-    author: 'neonbyte',
-    body: 'I expect maybe a hundred users. Do I really need a database server?',
-  },
+  // {
+  //   title: 'Tabs or spaces, final answer?',
+  //   author: 'pixelpirate',
+  //   body: 'My team argues about this in every code review. What does your formatter do?',
+  // },
+  // {
+  //   title: 'Is SQLite enough for a side project?',
+  //   author: 'neonbyte',
+  //   body: 'I expect maybe a hundred users. Do I really need a database server?',
+  // },
 ];
 
 @Injectable()
@@ -64,10 +64,6 @@ export class ThreadsService implements OnApplicationBootstrap {
       throw new NotFoundException(`Thread with ID ${id} not found`);
     }
     return thread;
-    // return {
-    //   ...thread,
-    //   comments,
-    // };
   }
 
   async create(payload: ThreadPayload): Promise<Thread> {
