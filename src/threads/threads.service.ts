@@ -41,9 +41,16 @@ export class ThreadsService implements OnApplicationBootstrap {
   }
 
   async getAllThreads(): Promise<Thread[]> {
-    return this.threads.find({
+    const threads = await this.threads.find({
       order: { createdAt: 'DESC' },
     });
+
+    return Promise.all(
+      threads.map(async (thread) => ({
+        ...thread,
+        commentCount: await this.commentsService.countByThreadId(thread.id),
+      })),
+    );
   }
 
   async getThreadsByAuthor(author: string): Promise<Thread[]> {

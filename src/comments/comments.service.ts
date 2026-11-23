@@ -38,4 +38,10 @@ export class CommentsService {
     comment.body = 'deleted';
     return this.comments.save(comment);
   }
+
+  countByThreadId(threadId: string): Promise<number> {
+    return this.comments.count({
+      where: { threadId },
+    });
+  }
 }
