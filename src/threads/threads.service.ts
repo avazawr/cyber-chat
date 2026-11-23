@@ -1,41 +1,65 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  OnApplicationBootstrap,
+} from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
 import {
   AuthorStats,
   Thread,
   ThreadPayload,
   ThreadWithComments,
-} from './thread.js';
-import { ThreadsRepository } from './threads.repository.js';
+} from './thread.entity.js';
 import { CommentsService } from '../comments/comments.service.js';
 import { Comment, CommentPayload } from '../comments/comment.js';
 
+const sampleThreads: ThreadPayload[] = [
+  {
+    title: 'Tabs or spaces, final answer?',
+    author: 'pixelpirate',
+    body: 'My team argues about this in every code review. What does your formatter do?',
+  },
+  {
+    title: 'Is SQLite enough for a side project?',
+    author: 'neonbyte',
+    body: 'I expect maybe a hundred users. Do I really need a database server?',
+  },
+];
+
 @Injectable()
-export class ThreadsService {
+export class ThreadsService implements OnApplicationBootstrap {
   constructor(
-    private readonly threadsRepository: ThreadsRepository,
+    @InjectRepository(Thread)
+    private readonly threads: Repository<Thread>,
     private readonly commentsService: CommentsService,
   ) {}
 
-  getAllThreads(): Thread[] {
-    return this.threadsRepository
-      .findAll()
-      .toSorted((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
+  async onApplicationBootstrap(): Promise<void> {
+    if ((await this.threads.count()) > 0) return;
+    await this.threads.save(this.threads.create(sampleThreads));
   }
 
-  getThreadsByAuthor(author: string) {
-    return this.threadsRepository
-      .findAll()
-      .filter((thread) => thread.author === author)
-      .toSorted((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
+  async getAllThreads(): Promise<Thread[]> {
+    return this.threads.find({
+      order: { createdAt: 'DESC' },
+    });
   }
 
-  findById(id: string): ThreadWithComments {
-    const thread = this.threadsRepository.findById(id);
+  async getThreadsByAuthor(author: string): Promise<Thread[]> {
+    return this.threads.find({
+      where: { author },
+      order: { createdAt: 'DESC' },
+    });
+  }
 
+  async findById(id: string): Promise<ThreadWithComments> {
+    const thread = await this.threads.findOneBy({ id });
     if (!thread) {
-      throw new NotFoundException('Thread not found');
+      throw new NotFoundException(`Thread with ID ${id} not found`);
     }
 
+    // TODO not from database
     const comments = this.commentsService.findByThread(thread.id);
 
     return {
@@ -44,12 +68,18 @@ export class ThreadsService {
     };
   }
 
-  create(payload: ThreadPayload): Thread {
-    return this.threadsRepository.create(payload);
+  async create(payload: ThreadPayload): Promise<Thread> {
+    // 1. Synchronous: builds the entity instance in memory
+    const thread = this.threads.create(payload);
+
+    // 2. Asynchronous: runs the INSERT statement
+    return this.threads.save(thread);
   }
 
-  getAuthorStats(): AuthorStats[] {
-    const threads = this.threadsRepository.findAll();
+  async getAuthorStats(): Promise<AuthorStats[]> {
+    const threads = await this.threads.find({
+      order: { createdAt: 'DESC' },
+    });
 
     let authorsList: string[] = threads.map((thread) => thread.author);
     authorsList = [...new Set(authorsList)];
@@ -69,6 +99,7 @@ export class ThreadsService {
     return authors;
   }
 
+  //TODO
   addComment(threadId: string, payload: CommentPayload): Comment {
     if (!this.findById(threadId)) {
       throw new NotFoundException('Thread not found');
@@ -76,9 +107,15 @@ export class ThreadsService {
     return this.commentsService.create(threadId, payload);
   }
 
-  remove(threadId: string) {
-    if (this.threadsRepository.delete(threadId)) {
+  async remove(threadId: string) {
+    const result = await this.threads.delete(threadId);
+
+    if (result.affected) {
+      //TODO
+      //await this.commentsService.deleteByThread(threadId);
       this.commentsService.deleteByThread(threadId);
-    } else throw new NotFoundException('Thread not found');
+    } else {
+      throw new NotFoundException('Thread not found');
+    }
   }
 }

@@ -9,7 +9,7 @@ import {
   Query,
 } from '@nestjs/common';
 import { ThreadsService } from './threads.service.js';
-import type { AuthorStats, Thread, ThreadPayload } from './thread.js';
+import type { AuthorStats, Thread, ThreadPayload } from './thread.entity.js';
 import type { Comment, CommentPayload } from '../comments/comment.js';
 
 @Controller('threads')
@@ -17,23 +17,23 @@ export class ThreadsController {
   constructor(private readonly threadsService: ThreadsService) {}
 
   @Get('')
-  getThreads(@Query('author') author: string): Thread[] {
+  getThreads(@Query('author') author: string): Promise<Thread[]> {
     if (!author) return this.threadsService.getAllThreads();
     else return this.threadsService.getThreadsByAuthor(author);
   }
 
   @Get('authors')
-  getAuthorStats(): AuthorStats[] {
+  getAuthorStats(): Promise<AuthorStats[]> {
     return this.threadsService.getAuthorStats();
   }
 
   @Get(':id')
-  getThreadById(@Param('id') id: string): Thread {
+  getThreadById(@Param('id') id: string): Promise<Thread> {
     return this.threadsService.findById(id);
   }
 
   @Post()
-  createThread(@Body() body: ThreadPayload): Thread {
+  createThread(@Body() body: ThreadPayload): Promise<Thread> {
     if (!body || !body?.title || !body?.author || !body?.body) {
       throw new BadRequestException('Missing required fields');
     }
