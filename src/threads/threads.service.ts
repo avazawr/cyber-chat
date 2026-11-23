@@ -12,7 +12,7 @@ import {
   ThreadWithComments,
 } from './thread.entity.js';
 import { CommentsService } from '../comments/comments.service.js';
-import { Comment, CommentPayload } from '../comments/comment.js';
+import { Comment, CommentPayload } from '../comments/comment.entity.js';
 
 const sampleThreads: ThreadPayload[] = [
   {
@@ -54,18 +54,20 @@ export class ThreadsService implements OnApplicationBootstrap {
   }
 
   async findById(id: string): Promise<ThreadWithComments> {
-    const thread = await this.threads.findOneBy({ id });
+    const thread = await this.threads.findOne({
+      where: { id },
+      relations: { comments: true },
+      order: { comments: { createdAt: 'ASC' } },
+    });
+
     if (!thread) {
       throw new NotFoundException(`Thread with ID ${id} not found`);
     }
-
-    // TODO not from database
-    const comments = this.commentsService.findByThread(thread.id);
-
-    return {
-      ...thread,
-      comments,
-    };
+    return thread;
+    // return {
+    //   ...thread,
+    //   comments,
+    // };
   }
 
   async create(payload: ThreadPayload): Promise<Thread> {
@@ -100,7 +102,10 @@ export class ThreadsService implements OnApplicationBootstrap {
   }
 
   //TODO
-  addComment(threadId: string, payload: CommentPayload): Comment {
+  async addComment(
+    threadId: string,
+    payload: CommentPayload,
+  ): Promise<Comment> {
     if (!this.findById(threadId)) {
       throw new NotFoundException('Thread not found');
     }
@@ -110,11 +115,7 @@ export class ThreadsService implements OnApplicationBootstrap {
   async remove(threadId: string) {
     const result = await this.threads.delete(threadId);
 
-    if (result.affected) {
-      //TODO
-      //await this.commentsService.deleteByThread(threadId);
-      this.commentsService.deleteByThread(threadId);
-    } else {
+    if (!result.affected) {
       throw new NotFoundException('Thread not found');
     }
   }

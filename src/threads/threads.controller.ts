@@ -10,7 +10,7 @@ import {
 } from '@nestjs/common';
 import { ThreadsService } from './threads.service.js';
 import type { AuthorStats, Thread, ThreadPayload } from './thread.entity.js';
-import type { Comment, CommentPayload } from '../comments/comment.js';
+import type { Comment, CommentPayload } from '../comments/comment.entity.js';
 
 @Controller('threads')
 export class ThreadsController {
@@ -45,7 +45,7 @@ export class ThreadsController {
   createComment(
     @Param('id') id: string,
     @Body() body: CommentPayload,
-  ): Comment {
+  ): Promise<Comment> {
     if (!body || !body?.author || !body?.body) {
       throw new BadRequestException('Missing required fields');
     }
@@ -54,6 +54,6 @@ export class ThreadsController {
 
   @Delete(':id')
   deleteThread(@Param('id') id: string) {
-    this.threadsService.remove(id);
+    return this.threadsService.remove(id);
   }
 }

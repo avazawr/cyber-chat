@@ -2,10 +2,12 @@ import {
   Column,
   CreateDateColumn,
   Entity,
+  OneToMany,
   PrimaryGeneratedColumn,
+  type Relation,
 } from 'typeorm';
 
-@Entity('thread')
+@Entity('threads')
 export class Thread {
   @PrimaryGeneratedColumn('uuid')
   id: string;
@@ -21,12 +23,15 @@ export class Thread {
 
   @CreateDateColumn()
   createdAt: Date;
+
+  @OneToMany(() => Comment, (comment) => comment.thread)
+  comments: Relation<Comment[]>;
 }
 
 export type ThreadPayload = Pick<Thread, 'title' | 'author' | 'body'>;
 
-///
-import type { Comment } from '../comments/comment.js';
+//
+import { Comment } from '../comments/comment.entity.js';
 
 export type AuthorStats = {
   author: string;

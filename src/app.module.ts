@@ -8,8 +8,6 @@ import { CommentsModule } from './comments/comments.module.js';
 
 @Module({
   imports: [
-    ThreadsModule,
-    CommentsModule,
     TypeOrmModule.forRoot({
       type: 'better-sqlite3',
       database: 'data/cyber-chat.sqlite',
@@ -17,6 +15,8 @@ import { CommentsModule } from './comments/comments.module.js';
       synchronize: true,
       logging: false,
     }),
+    ThreadsModule,
+    CommentsModule,
   ],
   controllers: [AppController],
   providers: [AppService],
