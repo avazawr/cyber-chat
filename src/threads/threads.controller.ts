@@ -5,6 +5,8 @@ import {
   Delete,
   Get,
   Param,
+  ParseUUIDPipe,
+  Patch,
   Post,
   Query,
 } from '@nestjs/common';
@@ -13,6 +15,7 @@ import type { AuthorStats, Thread } from './thread.entity.js';
 import type { Comment } from '../comments/comment.entity.js';
 import { CreateThreadDto } from './dto/create-thread.dto.js';
 import { CreateCommentDto } from '../comments/dto/create-comment.dto.js';
+import { UpdateThreadDto } from './dto/update-thread.dto.js';
 
 @Controller('threads')
 export class ThreadsController {
@@ -30,7 +33,7 @@ export class ThreadsController {
   }
 
   @Get(':id')
-  getThreadById(@Param('id') id: string): Promise<Thread> {
+  getThreadById(@Param('id', ParseUUIDPipe) id: string): Promise<Thread> {
     return this.threadsService.findById(id);
   }
 
@@ -39,16 +42,24 @@ export class ThreadsController {
     return this.threadsService.create(body);
   }
 
+  @Patch(':id')
+  updateThread(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() body: UpdateThreadDto,
+  ): Promise<Thread> {
+    return this.threadsService.update(id, body);
+  }
+
   @Post(':id/comments')
   createComment(
-    @Param('id') id: string,
+    @Param('id', ParseUUIDPipe) id: string,
     @Body() body: CreateCommentDto,
   ): Promise<Comment> {
     return this.threadsService.addComment(id, body);
   }
 
   @Delete(':id')
-  deleteThread(@Param('id') id: string) {
+  deleteThread(@Param('id', ParseUUIDPipe) id: string) {
     return this.threadsService.remove(id);
   }
 }

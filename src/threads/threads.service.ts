@@ -10,6 +10,8 @@ import { CommentsService } from '../comments/comments.service.js';
 import { Comment } from '../comments/comment.entity.js';
 import { CreateThreadDto } from './dto/create-thread.dto.js';
 import { CreateCommentDto } from '../comments/dto/create-comment.dto.js';
+import { Update } from 'vite';
+import { UpdateThreadDto } from './dto/update-thread.dto.js';
 
 const sampleThreads: CreateThreadDto[] = [
   // {
@@ -75,6 +77,12 @@ export class ThreadsService implements OnApplicationBootstrap {
     const thread = this.threads.create(payload);
 
     // 2. Asynchronous: runs the INSERT statement
+    return this.threads.save(thread);
+  }
+
+  async update(id: string, dto: UpdateThreadDto): Promise<Thread> {
+    const thread = await this.findById(id);
+    this.threads.merge(thread, dto);
     return this.threads.save(thread);
   }
 
