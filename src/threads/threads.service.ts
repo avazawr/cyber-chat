@@ -5,16 +5,13 @@ import {
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import {
-  AuthorStats,
-  Thread,
-  ThreadPayload,
-  ThreadWithComments,
-} from './thread.entity.js';
+import { AuthorStats, Thread, ThreadWithComments } from './thread.entity.js';
 import { CommentsService } from '../comments/comments.service.js';
-import { Comment, CommentPayload } from '../comments/comment.entity.js';
+import { Comment } from '../comments/comment.entity.js';
+import { CreateThreadDto } from './dto/create-thread.dto.js';
+import { CreateCommentDto } from '../comments/dto/create-comment.dto.js';
 
-const sampleThreads: ThreadPayload[] = [
+const sampleThreads: CreateThreadDto[] = [
   // {
   //   title: 'Tabs or spaces, final answer?',
   //   author: 'pixelpirate',
@@ -73,7 +70,7 @@ export class ThreadsService implements OnApplicationBootstrap {
     return thread;
   }
 
-  async create(payload: ThreadPayload): Promise<Thread> {
+  async create(payload: CreateThreadDto): Promise<Thread> {
     // 1. Synchronous: builds the entity instance in memory
     const thread = this.threads.create(payload);
 
@@ -107,11 +104,11 @@ export class ThreadsService implements OnApplicationBootstrap {
   //TODO
   async addComment(
     threadId: string,
-    payload: CommentPayload,
+    payload: CreateCommentDto,
   ): Promise<Comment> {
-    if (!this.findById(threadId)) {
-      throw new NotFoundException('Thread not found');
-    }
+    // id check
+    await this.findById(threadId);
+
     return this.commentsService.create(threadId, payload);
   }
 

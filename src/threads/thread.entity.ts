@@ -28,8 +28,6 @@ export class Thread {
   comments: Relation<Comment[]>;
 }
 
-export type ThreadPayload = Pick<Thread, 'title' | 'author' | 'body'>;
-
 //
 import { Comment } from '../comments/comment.entity.js';
 

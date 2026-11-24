@@ -9,8 +9,10 @@ import {
   Query,
 } from '@nestjs/common';
 import { ThreadsService } from './threads.service.js';
-import type { AuthorStats, Thread, ThreadPayload } from './thread.entity.js';
-import type { Comment, CommentPayload } from '../comments/comment.entity.js';
+import type { AuthorStats, Thread } from './thread.entity.js';
+import type { Comment } from '../comments/comment.entity.js';
+import { CreateThreadDto } from './dto/create-thread.dto.js';
+import { CreateCommentDto } from '../comments/dto/create-comment.dto.js';
 
 @Controller('threads')
 export class ThreadsController {
@@ -33,22 +35,15 @@ export class ThreadsController {
   }
 
   @Post()
-  createThread(@Body() body: ThreadPayload): Promise<Thread> {
-    if (!body || !body?.title || !body?.author || !body?.body) {
-      throw new BadRequestException('Missing required fields');
-    }
-
+  createThread(@Body() body: CreateThreadDto): Promise<Thread> {
     return this.threadsService.create(body);
   }
 
   @Post(':id/comments')
   createComment(
     @Param('id') id: string,
-    @Body() body: CommentPayload,
+    @Body() body: CreateCommentDto,
   ): Promise<Comment> {
-    if (!body || !body?.author || !body?.body) {
-      throw new BadRequestException('Missing required fields');
-    }
     return this.threadsService.addComment(id, body);
   }
 
