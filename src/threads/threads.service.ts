@@ -86,6 +86,14 @@ export class ThreadsService implements OnApplicationBootstrap {
     return this.threads.save(thread);
   }
 
+  async remove(threadId: string) {
+    const result = await this.threads.delete(threadId);
+
+    if (!result.affected) {
+      throw new NotFoundException('Thread not found');
+    }
+  }
+
   async getAuthorStats(): Promise<AuthorStats[]> {
     const threads = await this.threads.find({
       order: { createdAt: 'DESC' },
@@ -109,7 +117,6 @@ export class ThreadsService implements OnApplicationBootstrap {
     return authors;
   }
 
-  //TODO
   async addComment(
     threadId: string,
     payload: CreateCommentDto,
@@ -118,13 +125,5 @@ export class ThreadsService implements OnApplicationBootstrap {
     await this.findById(threadId);
 
     return this.commentsService.create(threadId, payload);
-  }
-
-  async remove(threadId: string) {
-    const result = await this.threads.delete(threadId);
-
-    if (!result.affected) {
-      throw new NotFoundException('Thread not found');
-    }
   }
 }

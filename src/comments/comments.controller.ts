@@ -9,7 +9,9 @@ import { plainToInstance } from 'class-transformer';
 export class CommentsController {
   constructor(private readonly commentsService: CommentsService) {}
   @Get(':id')
-  async getCommentById(@Param('id') id: string): Promise<CommentResponseDto> {
+  async getCommentById(
+    @Param('id', ParseUUIDPipe) id: string,
+  ): Promise<CommentResponseDto> {
     const result = await this.commentsService.findById(id);
 
     return plainToInstance(CommentResponseDto, result, {

@@ -4,6 +4,8 @@ import {
   Controller,
   Delete,
   Get,
+  HttpCode,
+  HttpStatus,
   Param,
   ParseUUIDPipe,
   Patch,
@@ -85,6 +87,7 @@ export class ThreadsController {
   }
 
   @Delete(':id')
+  @HttpCode(HttpStatus.NO_CONTENT)
   deleteThread(@Param('id', ParseUUIDPipe) id: string) {
     return this.threadsService.remove(id);
   }
