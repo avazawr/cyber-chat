@@ -24,6 +24,9 @@ export class Thread {
   @CreateDateColumn()
   createdAt: Date;
 
+  @Column({ type: 'text', nullable: true })
+  moderationNote: string | null;
+
   @OneToMany(() => Comment, (comment) => comment.thread)
   comments: Relation<Comment[]>;
 }

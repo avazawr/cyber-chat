@@ -16,15 +16,25 @@ import type { Comment } from '../comments/comment.entity.js';
 import { CreateThreadDto } from './dto/create-thread.dto.js';
 import { CreateCommentDto } from '../comments/dto/create-comment.dto.js';
 import { UpdateThreadDto } from './dto/update-thread.dto.js';
+import { ThreadResponseDto } from './dto/thread-response.dto.js';
+import { plainToInstance } from 'class-transformer';
+import { CommentResponseDto } from '../comments/dto/comment-response.dto.js';
 
 @Controller('threads')
 export class ThreadsController {
   constructor(private readonly threadsService: ThreadsService) {}
 
   @Get('')
-  getThreads(@Query('author') author: string): Promise<Thread[]> {
-    if (!author) return this.threadsService.getAllThreads();
-    else return this.threadsService.getThreadsByAuthor(author);
+  async getThreads(
+    @Query('author') author: string,
+  ): Promise<ThreadResponseDto[]> {
+    let result;
+    if (!author) result = await this.threadsService.getAllThreads();
+    else result = await this.threadsService.getThreadsByAuthor(author);
+
+    return plainToInstance(ThreadResponseDto, result, {
+      excludeExtraneousValues: true,
+    });
   }
 
   @Get('authors')
@@ -33,29 +43,45 @@ export class ThreadsController {
   }
 
   @Get(':id')
-  getThreadById(@Param('id', ParseUUIDPipe) id: string): Promise<Thread> {
-    return this.threadsService.findById(id);
+  async getThreadById(
+    @Param('id', ParseUUIDPipe) id: string,
+  ): Promise<ThreadResponseDto> {
+    const result = await this.threadsService.findById(id);
+    return plainToInstance(ThreadResponseDto, result, {
+      excludeExtraneousValues: true,
+    });
   }
 
   @Post()
-  createThread(@Body() body: CreateThreadDto): Promise<Thread> {
-    return this.threadsService.create(body);
+  async createThread(
+    @Body() body: CreateThreadDto,
+  ): Promise<ThreadResponseDto> {
+    const result = await this.threadsService.create(body);
+    return plainToInstance(ThreadResponseDto, result, {
+      excludeExtraneousValues: true,
+    });
   }
 
   @Patch(':id')
-  updateThread(
+  async updateThread(
     @Param('id', ParseUUIDPipe) id: string,
     @Body() body: UpdateThreadDto,
-  ): Promise<Thread> {
-    return this.threadsService.update(id, body);
+  ): Promise<ThreadResponseDto> {
+    const result = await this.threadsService.update(id, body);
+    return plainToInstance(ThreadResponseDto, result, {
+      excludeExtraneousValues: true,
+    });
   }
 
   @Post(':id/comments')
-  createComment(
+  async createComment(
     @Param('id', ParseUUIDPipe) id: string,
     @Body() body: CreateCommentDto,
-  ): Promise<Comment> {
-    return this.threadsService.addComment(id, body);
+  ): Promise<CommentResponseDto> {
+    const result = await this.threadsService.addComment(id, body);
+    return plainToInstance(CommentResponseDto, result, {
+      excludeExtraneousValues: true,
+    });
   }
 
   @Delete(':id')
