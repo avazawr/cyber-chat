@@ -21,6 +21,7 @@ import { UpdateThreadDto } from './dto/update-thread.dto.js';
 import { ThreadResponseDto } from './dto/thread-response.dto.js';
 import { plainToInstance } from 'class-transformer';
 import { CommentResponseDto } from '../comments/dto/comment-response.dto.js';
+import { ParseDatePipe } from './validation.pipe.js';
 
 @Controller('threads')
 export class ThreadsController {
@@ -29,10 +30,12 @@ export class ThreadsController {
   @Get('')
   async getThreads(
     @Query('author') author: string,
+    @Query('since', ParseDatePipe) since: string,
   ): Promise<ThreadResponseDto[]> {
-    let result;
-    if (!author) result = await this.threadsService.getAllThreads();
-    else result = await this.threadsService.getThreadsByAuthor(author);
+    const result = await this.threadsService.getAllThreads({
+      author,
+      since,
+    });
 
     return plainToInstance(ThreadResponseDto, result, {
       excludeExtraneousValues: true,

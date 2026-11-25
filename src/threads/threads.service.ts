@@ -4,13 +4,12 @@ import {
   OnApplicationBootstrap,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
-import { AuthorStats, Thread, ThreadWithComments } from './thread.entity.js';
+import { MoreThanOrEqual, Repository } from 'typeorm';
+import { AuthorStats, Thread } from './thread.entity.js';
 import { CommentsService } from '../comments/comments.service.js';
 import { Comment } from '../comments/comment.entity.js';
 import { CreateThreadDto } from './dto/create-thread.dto.js';
 import { CreateCommentDto } from '../comments/dto/create-comment.dto.js';
-import { Update } from 'vite';
 import { UpdateThreadDto } from './dto/update-thread.dto.js';
 
 const sampleThreads: CreateThreadDto[] = [
@@ -39,8 +38,21 @@ export class ThreadsService implements OnApplicationBootstrap {
     await this.threads.save(this.threads.create(sampleThreads));
   }
 
-  async getAllThreads(): Promise<Thread[]> {
+  async getAllThreads(filters: {
+    author?: string;
+    since?: string;
+  }): Promise<Thread[]> {
+    const where = {
+      ...(filters.author && { author: filters.author }),
+      ...(filters.since && {
+        createdAt: MoreThanOrEqual(new Date(filters.since)),
+      }),
+    };
+
     const threads = await this.threads.find({
+      where,
+      // TODO Frage
+      //relations: { comments: true },
       order: { createdAt: 'DESC' },
     });
 
@@ -52,14 +64,7 @@ export class ThreadsService implements OnApplicationBootstrap {
     );
   }
 
-  async getThreadsByAuthor(author: string): Promise<Thread[]> {
-    return this.threads.find({
-      where: { author },
-      order: { createdAt: 'DESC' },
-    });
-  }
-
-  async findById(id: string): Promise<ThreadWithComments> {
+  async findById(id: string): Promise<Thread> {
     const thread = await this.threads.findOne({
       where: { id },
       relations: { comments: true },

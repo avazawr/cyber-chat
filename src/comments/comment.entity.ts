@@ -30,5 +30,3 @@ export class Comment {
   @JoinColumn({ name: 'threadId' })
   thread: Relation<Thread>;
 }
-
-//export type CommentPayload = Pick<Comment, 'author' | 'body'>;

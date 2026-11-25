@@ -38,7 +38,3 @@ export type AuthorStats = {
   author: string;
   threads: number;
 };
-
-export type ThreadWithComments = Thread & {
-  comments: Comment[];
-};
