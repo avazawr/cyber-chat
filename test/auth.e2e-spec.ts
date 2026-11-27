@@ -45,4 +45,43 @@ describe('Users (e2e)', () => {
       .send({ username: 'ada', password: 'correct horse battery staple' })
       .expect(409);
   });
+
+  // Login user
+  it('Login user', async () => {
+    await request(app.getHttpServer())
+      .post('/auth/register')
+      .send({ username: 'ada', password: 'correct horse battery staple' })
+      .expect(201);
+
+    const response = await request(app.getHttpServer())
+      .post('/auth/login')
+      .send({ username: 'ada', password: 'correct horse battery staple' })
+      .expect(200);
+
+    expect(response.body).toEqual({
+      accessToken: expect.any(String),
+    });
+  });
+
+  // Login wrong user
+  it('Login wrong user', async () => {
+    await request(app.getHttpServer())
+      .post('/auth/register')
+      .send({ username: 'ada', password: 'correct horse battery staple' })
+      .expect(201);
+
+    const response1 = await request(app.getHttpServer())
+      .post('/auth/login')
+      .send({ username: 'ada11', password: 'correct horse battery staple' })
+      .expect(401);
+
+    expect(response1.body.message).toBe('Invalid username or password');
+
+    const response2 = await request(app.getHttpServer())
+      .post('/auth/login')
+      .send({ username: 'ada', password: 'correct horse battery staple11' })
+      .expect(401);
+
+    expect(response2.body.message).toBe('Invalid username or password');
+  });
 });

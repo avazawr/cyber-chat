@@ -9,6 +9,7 @@ export default defineConfig({
     env: {
       DATABASE_PATH: ':memory:',
       TYPEORM_SYNCHRONIZE: 'true',
+      JWT_SECRET: 'testtesttesttesttesttesttesttes=',
     },
   },
 });
