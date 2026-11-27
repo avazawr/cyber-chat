@@ -22,11 +22,15 @@ import { ThreadResponseDto } from './dto/thread-response.dto.js';
 import { plainToInstance } from 'class-transformer';
 import { CommentResponseDto } from '../comments/dto/comment-response.dto.js';
 import { ParseDatePipe } from './validation.pipe.js';
+import { Public } from '../auth/public.decorator.js';
+import { CurrentUser } from '../auth/current-user.decorator.js';
+import type { AuthUser } from '../auth/auth.types.js';
 
 @Controller('threads')
 export class ThreadsController {
   constructor(private readonly threadsService: ThreadsService) {}
 
+  @Public()
   @Get('')
   async getThreads(
     @Query('author') author: string,
@@ -42,11 +46,13 @@ export class ThreadsController {
     });
   }
 
+  @Public()
   @Get('authors')
   getAuthorStats(): Promise<AuthorStats[]> {
     return this.threadsService.getAuthorStats();
   }
 
+  @Public()
   @Get(':id')
   async getThreadById(
     @Param('id', ParseUUIDPipe) id: string,
@@ -59,9 +65,14 @@ export class ThreadsController {
 
   @Post()
   async createThread(
+    @CurrentUser() user: AuthUser,
     @Body() body: CreateThreadDto,
   ): Promise<ThreadResponseDto> {
-    const result = await this.threadsService.create(body);
+    const result = await this.threadsService.create({
+      title: body.title,
+      body: body.body,
+      author: user.username,
+    });
     return plainToInstance(ThreadResponseDto, result, {
       excludeExtraneousValues: true,
     });
@@ -82,8 +93,12 @@ export class ThreadsController {
   async createComment(
     @Param('id', ParseUUIDPipe) id: string,
     @Body() body: CreateCommentDto,
+    @CurrentUser() user: AuthUser,
   ): Promise<CommentResponseDto> {
-    const result = await this.threadsService.addComment(id, body);
+    const result = await this.threadsService.addComment(id, {
+      body: body.body,
+      author: user.username,
+    });
     return plainToInstance(CommentResponseDto, result, {
       excludeExtraneousValues: true,
     });

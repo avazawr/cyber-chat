@@ -51,7 +51,6 @@ export class ThreadsService implements OnApplicationBootstrap {
 
     const threads = await this.threads.find({
       where,
-      // TODO Frage
       //relations: { comments: true },
       order: { createdAt: 'DESC' },
     });
@@ -77,7 +76,9 @@ export class ThreadsService implements OnApplicationBootstrap {
     return thread;
   }
 
-  async create(payload: CreateThreadDto): Promise<Thread> {
+  async create(
+    payload: Pick<Thread, 'title' | 'author' | 'body'>,
+  ): Promise<Thread> {
     // 1. Synchronous: builds the entity instance in memory
     const thread = this.threads.create(payload);
 
@@ -124,7 +125,7 @@ export class ThreadsService implements OnApplicationBootstrap {
 
   async addComment(
     threadId: string,
-    payload: CreateCommentDto,
+    payload: Pick<Comment, 'author' | 'body'>,
   ): Promise<Comment> {
     // id check
     await this.findById(threadId);

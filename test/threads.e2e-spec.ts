@@ -20,13 +20,57 @@ describe('Users (e2e)', () => {
     await app.close();
   });
 
-  //Life of a thread
-  it('POST /threads', async () => {
+  //write without a token
+  it('write without a token', async () => {
     const response = await request(app.getHttpServer())
       .post('/threads')
       .send({
         title: 'Hello',
-        author: 'Author',
+        body: 'My 1nd thread',
+      })
+      .expect(401);
+  });
+  //author comes from the token
+  it('author comes from the token', async () => {
+    await request(app.getHttpServer())
+      .post('/auth/register')
+      .send({ username: 'ada', password: 'correct horse battery staple' })
+      .expect(201);
+
+    const login = await request(app.getHttpServer())
+      .post('/auth/login')
+      .send({ username: 'ada', password: 'correct horse battery staple' })
+      .expect(200);
+
+    const response = await request(app.getHttpServer())
+      .post('/threads')
+      .set('Authorization', `Bearer ${login.body.accessToken}`)
+      .send({
+        title: 'Hello',
+        body: 'My 1nd thread',
+      })
+      .expect(201);
+
+    expect(response.body.author).toEqual('ada');
+  });
+
+  //Life of a thread
+  it('Life of a thread', async () => {
+    await request(app.getHttpServer())
+      .post('/auth/register')
+      .send({ username: 'ada', password: 'correct horse battery staple' })
+      .expect(201);
+
+    const login = await request(app.getHttpServer())
+      .post('/auth/login')
+      .send({ username: 'ada', password: 'correct horse battery staple' })
+      .expect(200);
+
+    const response = await request(app.getHttpServer())
+      .post('/threads')
+      .set('Authorization', `Bearer ${login.body.accessToken}`)
+      .send({
+        title: 'Hello',
         body: 'My 1nd thread',
       })
       .expect(201);
@@ -35,8 +79,8 @@ describe('Users (e2e)', () => {
 
     await request(app.getHttpServer())
       .post(`/threads/${threadId}/comments`)
+      .set('Authorization', `Bearer ${login.body.accessToken}`)
       .send({
-        author: 'Comment Author',
         body: 'My comment',
       })
       .expect(201);
@@ -49,13 +93,14 @@ describe('Users (e2e)', () => {
 
     expect(threadResponse.body.comments[0]).toEqual(
       expect.objectContaining({
-        author: 'Comment Author',
+        author: 'ada',
         body: 'My comment',
       }),
     );
 
     await request(app.getHttpServer())
       .delete(`/threads/${threadId}`)
+      .set('Authorization', `Bearer ${login.body.accessToken}`)
       .expect(204);
 
     await request(app.getHttpServer())
