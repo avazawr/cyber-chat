@@ -48,7 +48,7 @@ describe('ThreadsService', () => {
 
   // addComment()
   it('addComment for a thread that does not exist', async () => {
-    //threads.findOne.mockResolvedValue(null);
+    threads.findOne.mockResolvedValue(null);
 
     const comment: CreateCommentDto = {
       author: 'author name',

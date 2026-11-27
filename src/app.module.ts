@@ -7,6 +7,8 @@ import { AppController } from './app.controller.js';
 import { AppService } from './app.service.js';
 import { ThreadsModule } from './threads/threads.module.js';
 import { CommentsModule } from './comments/comments.module.js';
+import { UsersModule } from './users/users.module.js';
+import { AuthModule } from './auth/auth.module.js';
 
 @Module({
   imports: [
@@ -18,12 +20,14 @@ import { CommentsModule } from './comments/comments.module.js';
         type: 'better-sqlite3',
         database: config.getOrThrow<string>('DATABASE_PATH'),
         autoLoadEntities: true,
-        synchronize: false,
+        synchronize: config.get('TYPEORM_SYNCHRONIZE') === 'true',
         logging: false,
       }),
     }),
     ThreadsModule,
     CommentsModule,
+    UsersModule,
+    AuthModule,
   ],
   controllers: [AppController],
   providers: [

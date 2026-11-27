@@ -6,5 +6,9 @@ export default defineConfig({
     globals: true,
     root: './',
     include: ['**/*.e2e-spec.ts'],
+    env: {
+      DATABASE_PATH: ':memory:',
+      TYPEORM_SYNCHRONIZE: 'true',
+    },
   },
 });
